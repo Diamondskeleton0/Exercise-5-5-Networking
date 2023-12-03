@@ -12,6 +12,18 @@ var peer_id = -1
 # Get the gravity from the project settings to be synced with RigidBody nodes.
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
+@rpc("any_peer","call_remote","unreliable_ordered")
+func _set_position(p):
+	global_position = p
+
+@rpc("any_peer","call_remote","unreliable_ordered")
+func _set_rotation(r):
+	rotation.y = r
+
+@rpc("any_peer","call_remote","unreliable_ordered")
+func _die():
+	queue_free()
+
 func _ready():
 	$Pivot/Camera.current = true
 		
@@ -40,8 +52,11 @@ func _physics_process(delta):
 	else:
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 		velocity.z = move_toward(velocity.z, 0, SPEED)
-
+	
+	rpc("_set_position", global_position)
+	rpc("_set_rotation", rotation.y)
 	move_and_slide()
 
 func die():
+	rpc("_die")
 	queue_free()
